@@ -94,9 +94,9 @@ func (s *threadUnsafeSet[T]) Clone() Set[T] {
 	return clonedSet
 }
 
-func (s *threadUnsafeSet[T]) Contains(v ...T) bool {
-	for _, val := range v {
-		if !s.contains(val) {
+func (s *threadUnsafeSet[T]) Contains(vs ...T) bool {
+	for _, v := range vs {
+		if !s.contains(v) {
 			return false
 		}
 	}
@@ -107,9 +107,9 @@ func (s *threadUnsafeSet[T]) ContainsOne(v T) bool {
 	return s.contains(v)
 }
 
-func (s *threadUnsafeSet[T]) ContainsAny(v ...T) bool {
-	for _, val := range v {
-		if s.contains(val) {
+func (s *threadUnsafeSet[T]) ContainsAny(vs ...T) bool {
+	for _, v := range vs {
+		if s.contains(v) {
 			return true
 		}
 	}
@@ -121,14 +121,14 @@ func (s *threadUnsafeSet[T]) ContainsAnyElement(other Set[T]) bool {
 
 	// loop over smaller set
 	if s.Cardinality() < other.Cardinality() {
-		for elem := range *s {
-			if o.contains(elem) {
+		for e := range *s {
+			if o.contains(e) {
 				return true
 			}
 		}
 	} else {
-		for elem := range *o {
-			if s.contains(elem) {
+		for e := range *o {
+			if s.contains(e) {
 				return true
 			}
 		}
@@ -146,17 +146,17 @@ func (s *threadUnsafeSet[T]) Difference(other Set[T]) Set[T] {
 	o := other.(*threadUnsafeSet[T])
 
 	diff := make(threadUnsafeSet[T], s.Cardinality())
-	for elem := range *s {
-		if !o.contains(elem) {
-			diff.add(elem)
+	for e := range *s {
+		if !o.contains(e) {
+			diff.add(e)
 		}
 	}
 	return &diff
 }
 
 func (s *threadUnsafeSet[T]) Each(cb func(T) bool) {
-	for elem := range *s {
-		if cb(elem) {
+	for e := range *s {
+		if cb(e) {
 			break
 		}
 	}
@@ -178,8 +178,8 @@ func (s *threadUnsafeSet[T]) Equal(other Set[T]) bool {
 	if s.Cardinality() != other.Cardinality() {
 		return false
 	}
-	for elem := range *s {
-		if !o.contains(elem) {
+	for e := range *s {
+		if !o.contains(e) {
 			return false
 		}
 	}
@@ -193,16 +193,16 @@ func (s *threadUnsafeSet[T]) Intersect(other Set[T]) Set[T] {
 	// loop over smaller set
 	if s.Cardinality() < other.Cardinality() {
 		intersection = make(threadUnsafeSet[T], s.Cardinality())
-		for elem := range *s {
-			if o.contains(elem) {
-				intersection.add(elem)
+		for e := range *s {
+			if o.contains(e) {
+				intersection.add(e)
 			}
 		}
 	} else {
 		intersection = make(threadUnsafeSet[T], o.Cardinality())
-		for elem := range *o {
-			if s.contains(elem) {
-				intersection.add(elem)
+		for e := range *o {
+			if s.contains(e) {
+				intersection.add(e)
 			}
 		}
 	}
@@ -226,8 +226,8 @@ func (s *threadUnsafeSet[T]) IsSubset(other Set[T]) bool {
 	if s.Cardinality() > other.Cardinality() {
 		return false
 	}
-	for elem := range *s {
-		if !o.contains(elem) {
+	for e := range *s {
+		if !o.contains(e) {
 			return false
 		}
 	}
@@ -241,8 +241,8 @@ func (s *threadUnsafeSet[T]) IsSuperset(other Set[T]) bool {
 func (s *threadUnsafeSet[T]) Iter() <-chan T {
 	ch := make(chan T)
 	go func() {
-		for elem := range *s {
-			ch <- elem
+		for e := range *s {
+			ch <- e
 		}
 		close(ch)
 	}()
@@ -254,15 +254,15 @@ func (s *threadUnsafeSet[T]) Iterator() *Iterator[T] {
 	iterator, ch, stopCh := newIterator[T]()
 
 	go func() {
-	L:
-		for elem := range *s {
+		defer close(ch)
+
+		for e := range *s {
 			select {
 			case <-stopCh:
-				break L
-			case ch <- elem:
+				return
+			case ch <- e:
 			}
 		}
-		close(ch)
 	}()
 
 	return iterator
@@ -303,17 +303,17 @@ func (s threadUnsafeSet[T]) Remove(v T) {
 	delete(s, v)
 }
 
-func (s threadUnsafeSet[T]) RemoveAll(i ...T) {
-	for _, elem := range i {
-		delete(s, elem)
+func (s threadUnsafeSet[T]) RemoveAll(vs ...T) {
+	for _, v := range vs {
+		delete(s, v)
 	}
 }
 
 func (s threadUnsafeSet[T]) String() string {
 	items := make([]string, 0, len(s))
 
-	for elem := range s {
-		items = append(items, fmt.Sprintf("%v", elem))
+	for e := range s {
+		items = append(items, fmt.Sprintf("%v", e))
 	}
 	return fmt.Sprintf("Set{%s}", strings.Join(items, ", "))
 }
@@ -324,14 +324,14 @@ func (s *threadUnsafeSet[T]) SymmetricDifference(other Set[T]) Set[T] {
 	// maximum number of elements is the sum of s and o cardinalities (when s and o are disjoint)
 	n := s.Cardinality() + o.Cardinality()
 	sd := make(threadUnsafeSet[T], n)
-	for elem := range *s {
-		if !o.contains(elem) {
-			sd.add(elem)
+	for e := range *s {
+		if !o.contains(e) {
+			sd.add(e)
 		}
 	}
-	for elem := range *o {
-		if !s.contains(elem) {
-			sd.add(elem)
+	for e := range *o {
+		if !s.contains(e) {
+			sd.add(e)
 		}
 	}
 	return &sd
@@ -364,29 +364,18 @@ func (s threadUnsafeSet[T]) Union(other Set[T]) Set[T] {
 
 // MarshalJSON creates a JSON array from the set, it marshals all elements
 func (s threadUnsafeSet[T]) MarshalJSON() ([]byte, error) {
-	items := make([]string, 0, s.Cardinality())
-
-	for elem := range s {
-		b, err := json.Marshal(elem)
-		if err != nil {
-			return nil, err
-		}
-
-		items = append(items, string(b))
-	}
-
-	return []byte(fmt.Sprintf("[%s]", strings.Join(items, ","))), nil
+	return json.Marshal(s.ToSlice())
 }
 
 // UnmarshalJSON recreates a set from a JSON array, it only decodes
 // primitive types. Numbers are decoded as json.Number.
 func (s *threadUnsafeSet[T]) UnmarshalJSON(b []byte) error {
-	var i []T
-	err := json.Unmarshal(b, &i)
+	var vs []T
+	err := json.Unmarshal(b, &vs)
 	if err != nil {
 		return err
 	}
-	s.append(i...)
+	s.append(vs...)
 
 	return nil
 }
@@ -402,12 +391,12 @@ func (s threadUnsafeSet[T]) UnmarshalBSONValue(bt bsontype.Type, b []byte) error
 		return fmt.Errorf("must use BSON Array to unmarshal Set")
 	}
 
-	var i []T
-	err := bson.UnmarshalValue(bt, b, &i)
+	var vs []T
+	err := bson.UnmarshalValue(bt, b, &vs)
 	if err != nil {
 		return err
 	}
-	s.append(i...)
+	s.append(vs...)
 
 	return nil
 }
