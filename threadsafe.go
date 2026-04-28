@@ -77,6 +77,17 @@ func (t *threadSafeSet[T]) Append(v ...T) int {
 	return t.uss.Append(v...)
 }
 
+func (t *threadSafeSet[T]) AppendFrom(other Set[T]) int {
+	o := other.(*threadSafeSet[T])
+
+	t.Lock()  // Write Lock
+	o.RLock() // Read Lock
+	defer t.Unlock()
+	defer o.RUnlock()
+
+	return t.uss.AppendFrom(o.uss)
+}
+
 func (t *threadSafeSet[T]) Contains(v ...T) bool {
 	t.RLock()
 	defer t.RUnlock()
