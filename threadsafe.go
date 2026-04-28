@@ -113,8 +113,8 @@ func (t *threadSafeSet[T]) ContainsAnyElement(other Set[T]) bool {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	return t.uss.ContainsAnyElement(o.uss)
@@ -128,8 +128,8 @@ func (t *threadSafeSet[T]) IsSubset(other Set[T]) bool {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	return t.uss.IsSubset(o.uss)
@@ -139,8 +139,8 @@ func (t *threadSafeSet[T]) IsProperSubset(other Set[T]) bool {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	return t.uss.IsProperSubset(o.uss)
@@ -158,8 +158,8 @@ func (t *threadSafeSet[T]) Union(other Set[T]) Set[T] {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	unsafeUnion := t.uss.Union(o.uss)
@@ -170,8 +170,8 @@ func (t *threadSafeSet[T]) Intersect(other Set[T]) Set[T] {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	unsafeIntersection := t.uss.Intersect(o.uss)
@@ -182,8 +182,8 @@ func (t *threadSafeSet[T]) Difference(other Set[T]) Set[T] {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	unsafeDifference := t.uss.Difference(o.uss)
@@ -194,8 +194,8 @@ func (t *threadSafeSet[T]) SymmetricDifference(other Set[T]) Set[T] {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	unsafeDifference := t.uss.SymmetricDifference(o.uss)
@@ -244,6 +244,7 @@ func (t *threadSafeSet[T]) Each(cb func(T) bool) {
 func (t *threadSafeSet[T]) Filter(cb func(T) bool) Set[T] {
 	t.RLock()
 	defer t.RUnlock()
+
 	mappedSet := newThreadSafeSetWithSize[T](t.uss.Cardinality())
 	for elem := range *t.uss {
 		if cb(elem) {
@@ -292,8 +293,8 @@ func (t *threadSafeSet[T]) Equal(other Set[T]) bool {
 	o := other.(*threadSafeSet[T])
 
 	t.RLock()
-	defer t.RUnlock()
 	o.RLock()
+	defer t.RUnlock()
 	defer o.RUnlock()
 
 	return t.uss.Equal(o.uss)

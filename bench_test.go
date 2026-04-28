@@ -110,9 +110,7 @@ func BenchmarkAppendFromUnsafe(b *testing.B) {
 
 func benchRemove(b *testing.B, s Set[int]) {
 	nums := nrand(b.N)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nums...)
 
 	b.ResetTimer()
 	for _, v := range nums {
@@ -158,10 +156,7 @@ func BenchmarkClearUnsafe(b *testing.B) {
 }
 
 func benchClone(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -195,9 +190,7 @@ func BenchmarkClone100Unsafe(b *testing.B) {
 
 func benchContains(b *testing.B, n int, s Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nums...)
 
 	nums[n-1] = -1 // Definitely not in s
 
@@ -232,10 +225,7 @@ func BenchmarkContains100Unsafe(b *testing.B) {
 }
 
 func benchContainsOne(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -270,9 +260,7 @@ func BenchmarkContainsOne100Unsafe(b *testing.B) {
 // In this scenario, Contains argument escapes to the heap, while ContainsOne does not.
 func benchContainsComparison(b *testing.B, n int, s Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nums...)
 
 	b.Run("Contains", func(b *testing.B) {
 		b.ReportAllocs()
@@ -326,10 +314,8 @@ func BenchmarkContainsComparison100Safe(b *testing.B) {
 
 func benchEqual(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -363,12 +349,8 @@ func BenchmarkEqual100Unsafe(b *testing.B) {
 
 func benchDifference(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
-	for _, v := range nums[:n/2] {
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums[:n/2]...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -378,10 +360,8 @@ func benchDifference(b *testing.B, n int, s, t Set[int]) {
 
 func benchIsSubset(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -415,10 +395,8 @@ func BenchmarkIsSubset100Unsafe(b *testing.B) {
 
 func benchIsSuperset(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -452,10 +430,8 @@ func BenchmarkIsSuperset100Unsafe(b *testing.B) {
 
 func benchIsProperSubset(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -489,10 +465,8 @@ func BenchmarkIsProperSubset100Unsafe(b *testing.B) {
 
 func benchIsProperSuperset(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-		t.Add(v)
-	}
+	s.Append(nums...)
+	t.Append(nums...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -550,12 +524,8 @@ func BenchmarkDifference100Unsafe(b *testing.B) {
 
 func benchIntersect(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(int(float64(n) * float64(1.5)))
-	for _, v := range nums[:n] {
-		s.Add(v)
-	}
-	for _, v := range nums[n/2:] {
-		t.Add(v)
-	}
+	s.Append(nums[:n]...)
+	t.Append(nums[n/2:]...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -589,6 +559,7 @@ func BenchmarkIntersect100Unsafe(b *testing.B) {
 
 func benchSymmetricDifference(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(int(float64(n) * float64(1.5)))
+
 	for _, v := range nums[:n] {
 		s.Add(v)
 	}
@@ -628,12 +599,8 @@ func BenchmarkSymmetricDifference100Unsafe(b *testing.B) {
 
 func benchUnion(b *testing.B, n int, s, t Set[int]) {
 	nums := nrand(n)
-	for _, v := range nums[:n/2] {
-		s.Add(v)
-	}
-	for _, v := range nums[n/2:] {
-		t.Add(v)
-	}
+	s.Append(nums[:n/2]...)
+	t.Append(nums[n/2:]...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -666,15 +633,12 @@ func BenchmarkUnion100Unsafe(b *testing.B) {
 }
 
 func benchEach(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		s.Each(func(elem int) bool {
-			_ = elem
+		s.Each(func(e int) bool {
+			_ = e
 			return false
 		})
 	}
@@ -705,10 +669,7 @@ func BenchmarkEach100Unsafe(b *testing.B) {
 }
 
 func benchIter(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -744,10 +705,7 @@ func BenchmarkIter100Unsafe(b *testing.B) {
 }
 
 func benchIterator(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -783,10 +741,7 @@ func BenchmarkIterator100Unsafe(b *testing.B) {
 }
 
 func benchString(b *testing.B, n int, s Set[int]) {
-	nums := nrand(n)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(n)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -819,10 +774,7 @@ func BenchmarkString100Unsafe(b *testing.B) {
 }
 
 func benchToSlice(b *testing.B, s Set[int]) {
-	nums := nrand(b.N)
-	for _, v := range nums {
-		s.Add(v)
-	}
+	s.Append(nrand(b.N)...)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
