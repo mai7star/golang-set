@@ -8,13 +8,7 @@ import (
 )
 
 func Test_Elements123(t *testing.T) {
-	a := NewSet[string]()
-
-	a.Add("Z")
-	a.Add("Y")
-	a.Add("X")
-	a.Add("W")
-
+	a := NewSet("Z", "Y", "X", "W")
 	b := NewSet[string]()
 	for elem := range Elements(a) {
 		b.Add(elem)
